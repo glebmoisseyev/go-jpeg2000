@@ -613,7 +613,10 @@ func (d *TileDecoder) DecodeCodeBlock(cb *CodeBlock, bandType int) error {
 			decoded := htDec.Decode64(cb.Data, numBitPlanes, bandType)
 			cb.Coefficients64 = append(cb.Coefficients64[:0], decoded...)
 		} else {
-			cb.Coefficients = htDec.Decode(cb.Data, numBitPlanes, bandType)
+			// Copy before pooling, as the wide branch does: Decode returns
+			// a view of the decoder's own buffer.
+			decoded := htDec.Decode(cb.Data, numBitPlanes, bandType)
+			cb.Coefficients = append(cb.Coefficients[:0], decoded...)
 		}
 		entropy.PutHTDecoder(htDec)
 	} else {
